@@ -99,6 +99,11 @@ Move into the project
 cd NightByte
 ```
 
+Move into the frontend
+```bash
+cd NightByte/frontend
+```
+
 Install dependencies
 
 ```bash
