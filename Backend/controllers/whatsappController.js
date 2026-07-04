@@ -14,6 +14,7 @@
 //   anything else → sends unknown command help message
 
 import twilio from "twilio";
+import { getIO } from "../config/socket.js";
 import MenuItem from "../models/MenuItem.js";
 import Order from "../models/Order.js";
 import Cafe from "../models/Cafe.js";
@@ -138,6 +139,29 @@ export const webhook = async (req, res) => {
         })),
         totalCost: session.pendingTotal,
       });
+
+      // Create the Order
+      const newOrder = await Order.create({
+        customer: user._id,
+        customerPhone: phone,
+        items: session.pendingItems.map((i) => ({
+          menuItem: i.menuItemId,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+        })),
+        totalCost: session.pendingTotal,
+      });
+
+      // Notify owner dashboard via socket
+      try {
+        const io = getIO();
+        io.to("owner_room").emit("new_order", newOrder);
+      } catch (socketErr) {
+        console.error("[Socket] Failed to emit new_order from WhatsApp:", socketErr.message);
+      }
+
+
 
       // Clear session
       await WhatsappSession.deleteOne({ phone });
