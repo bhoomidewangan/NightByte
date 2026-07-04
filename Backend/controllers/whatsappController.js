@@ -113,62 +113,44 @@ export const webhook = async (req, res) => {
     }
 
     // ── CONFIRM ───────────────────────────────────────────────────────────────
-    if (command === "confirm") {
-      const session = await WhatsappSession.findOne({ phone });
+if (command === "confirm") {
+  const session = await WhatsappSession.findOne({ phone });
 
-      if (!session || session.state !== "AWAITING_CONFIRM" || session.pendingItems.length === 0) {
-        await sendWhatsAppMessage(phone, `No pending order to confirm.\n\nType *Order* to place one.`);
-        return;
-      }
+  if (!session || session.state !== "AWAITING_CONFIRM" || session.pendingItems.length === 0) {
+    await sendWhatsAppMessage(phone, `No pending order to confirm.\n\nType *Order* to place one.`);
+    return;
+  }
 
-      // Find or create the User document for this phone
-      let user = await User.findOne({ phone });
-      if (!user) {
-        user = await User.create({ phone, isMobileVerified: false });
-      }
+  let user = await User.findOne({ phone });
+  if (!user) {
+    user = await User.create({ phone, isMobileVerified: false });
+  }
 
-      // Create the Order
-      await Order.create({
-        customer: user._id,
-        customerPhone: phone,
-        items: session.pendingItems.map((i) => ({
-          menuItem: i.menuItemId,
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity,
-        })),
-        totalCost: session.pendingTotal,
-      });
+  // ONLY ONE Order.create() here
+  const newOrder = await Order.create({
+    customer: user._id,
+    customerPhone: phone,
+    items: session.pendingItems.map((i) => ({
+      menuItem: i.menuItemId,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+    })),
+    totalCost: session.pendingTotal,
+  });
 
-      // Create the Order
-      const newOrder = await Order.create({
-        customer: user._id,
-        customerPhone: phone,
-        items: session.pendingItems.map((i) => ({
-          menuItem: i.menuItemId,
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity,
-        })),
-        totalCost: session.pendingTotal,
-      });
+  // Notify owner dashboard via socket
+  try {
+    const io = getIO();
+    io.to("owner_room").emit("new_order", newOrder);
+  } catch (socketErr) {
+    console.error("[Socket] Failed to emit new_order from WhatsApp:", socketErr.message);
+  }
 
-      // Notify owner dashboard via socket
-      try {
-        const io = getIO();
-        io.to("owner_room").emit("new_order", newOrder);
-      } catch (socketErr) {
-        console.error("[Socket] Failed to emit new_order from WhatsApp:", socketErr.message);
-      }
-
-
-
-      // Clear session
-      await WhatsappSession.deleteOne({ phone });
-
-      await sendWhatsAppMessage(phone, orderConfirmedMessage(session.pendingTotal));
-      return;
-    }
+  await WhatsappSession.deleteOne({ phone });
+  await sendWhatsAppMessage(phone, orderConfirmedMessage(session.pendingTotal));
+  return;
+}
 
     // ── CANCEL ────────────────────────────────────────────────────────────────
     if (command === "cancel") {
