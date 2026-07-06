@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import CustomerLayout from "./components/CustomerLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -17,7 +19,42 @@ import AdminMenu from "./pages/AdminMenu";
 import AdminOrders from "./pages/AdminOrders";
 import CafeSettings from "./pages/CafeSettings";
 
+import { connectSocket, disconnectSocket } from "./socket";
+
 function App() {
+  const { token, isLoggedIn } = useSelector((state) => state.auth);
+
+  // Reconnect socket on page refresh if user is already logged in.
+  // Without this, refreshing the page would lose the socket connection
+  // because connectSocket() only runs on the Login page normally.
+  const socketInitialised = useRef(false);
+
+  // useEffect(() => {
+  //   if (isLoggedIn && token && !socketInitialised.current) {
+  //     connectSocket(token);
+  //     socketInitialised.current = true;
+  //   }
+
+  //   if (!isLoggedIn) {
+  //     disconnectSocket();
+  //     socketInitialised.current = false;
+  //   }
+  // }, [isLoggedIn, token]);
+  useEffect(() => {
+  console.log("useEffect fired — isLoggedIn:", isLoggedIn, "token:", !!token, "ref:", socketInitialised.current);
+  
+  if (isLoggedIn && token && !socketInitialised.current) {
+    connectSocket(token);
+    socketInitialised.current = true;
+    console.log("Socket connect called");
+  }
+
+  if (!isLoggedIn) {
+    disconnectSocket();
+    socketInitialised.current = false;
+  }
+}, [isLoggedIn, token]);
+
   return (
     <BrowserRouter>
       <Routes>

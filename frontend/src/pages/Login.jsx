@@ -49,6 +49,9 @@ function Login() {
         })
       );
 
+      // Connect socket immediately after login using the returned token
+      //connectSocket(res.data.token);
+
       toast.success("Login successful");
 
       if (res.data.user?.isAdmin) {

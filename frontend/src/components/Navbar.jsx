@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../redux/authSlice";
+import { disconnectSocket } from "../socket";
 
 function Navbar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [openProfile, setOpenProfile] = useState(false);
 
   const { user, isLoggedIn } = useSelector((state) => state.auth);
@@ -16,8 +18,11 @@ function Navbar() {
   );
 
   const handleLogout = () => {
+    // Disconnect socket before clearing auth state
+    disconnectSocket();
     dispatch(logoutUser());
     setOpenProfile(false);
+    navigate("/login");
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "../api/api";
+import { getSocket } from "../socket";
 
 function Orders() {
   const [filter, setFilter] = useState("All");
@@ -23,6 +24,36 @@ function Orders() {
 
   useEffect(() => {
     fetchOrders();
+  }, []);
+
+  // ── Socket: listen for status updates in real time ───────────────────────
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleStatusUpdate = ({ orderId, status }) => {
+      // Update the matching order's status in state without refetching
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === orderId ? { ...order, status } : order
+        )
+      );
+
+      // Format status for the toast message
+      const formatted = status
+        .split("_")
+        .map((w) => w[0].toUpperCase() + w.slice(1))
+        .join(" ");
+
+      toast.success(`Order update: ${formatted}`, { duration: 5000 });
+    };
+
+    socket.on("order_status_updated", handleStatusUpdate);
+
+    // Cleanup listener when component unmounts
+    return () => {
+      socket.off("order_status_updated", handleStatusUpdate);
+    };
   }, []);
 
   const formatStatus = (status) => {
