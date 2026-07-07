@@ -88,7 +88,7 @@ NightByte/
 │       ├── main.jsx
 │       ├── socket.js
 │       └── index.css
-├── nightbyte-backend/
+├── Backend/
 │   ├── config/
 │   │   ├── db.js
 │   │   ├── env.js
