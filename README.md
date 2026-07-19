@@ -1,203 +1,250 @@
-# ☕ NightByte
+# NightByte ☕
+> Late-night fuel for the focused few.
 
-A modern late-night cafe ordering system built for college campuses. NightByte allows students to browse the menu, place orders, and track their order status, while providing cafe owners with a dedicated admin dashboard to manage menu items, orders, and cafe settings.
-
----
-
-## ✨ Features
-
-### 👤 Customer Panel
-
-- OTP-based Login & Signup
-- Browse Menu
-- Add Items to Cart
-- Update Cart Quantity
-- Remove Items from Cart
-- Place Orders
-- View Order History
-- Responsive UI
-- Backend API Integration
-
-### 👨‍💼 Admin Panel
-
-- Admin Authentication
-- Dashboard
-- View Customer Orders
-- Update Order Status
-- Manage Menu
-- Toggle Item Availability
-- Add/Edit/Delete Menu Items
-- Manage Cafe Settings
-- Enable/Disable Ordering
+A full-stack canteen management and ordering system with dual ordering channels — a web app and a conversational WhatsApp bot — built for a single cafe owner to manage their menu, orders, and customers in real time.
 
 ---
 
-## 🛠 Tech Stack
+## Features
 
-### Frontend
+### Customer (Web)
+- OTP-based login via WhatsApp
+- Browse menu grouped by category
+- Add items to cart with live total calculation
+- Place orders and track status in real time via Socket.io
 
-- React.js
-- Redux Toolkit
-- React Router DOM
-- Tailwind CSS
-- Axios
-- React Hot Toast
+### Customer (WhatsApp)
+- Type `Menu` to browse available items
+- Type `Order` to place an order conversationally
+- Type `Confirm` or `Cancel` to confirm or cancel
+- Type `Update` to check current order status
+- Receive automatic status updates as the owner advances the order
 
-### Backend (Integrated)
-
-- Node.js
-- Express.js
-- MongoDB
-- JWT Authentication
-- WhatsApp OTP Authentication
-
----
-
-## 📂 Project Structure
-
-```
-src
-│
-├── api
-│
-├── components
-│   ├── Navbar
-│   ├── ProtectedRoute
-│   ├── AdminLayout
-│   ├── AdminRoute
-│
-├── pages
-│   ├── Home
-│   ├── Menu
-│   ├── Cart
-│   ├── Orders
-│   ├── Login
-│   ├── Signup
-│   ├── AdminDashboard
-│   ├── AdminMenu
-│   ├── AdminOrders
-│   └── CafeSettings
-│
-├── redux
-│
-└── App.jsx
-```
+### Owner / Admin
+- OTP-based login via WhatsApp
+- Create and manage cafe profile (name, timings, enable/disable ordering)
+- Full menu management — add, edit, toggle availability, delete items
+- Live order notifications on dashboard via Socket.io (no refresh needed)
+- Advance order status: `pending → accepted → preparing → prepared → out for delivery → delivered`
+- Filter orders by status, date, or both
 
 ---
 
-## 🚀 Getting Started
+## Tech Stack
 
-### Clone the repository
+| Layer | Technology |
+|---|---|
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Authentication | JWT, bcryptjs |
+| Real-time | Socket.io |
+| WhatsApp | Twilio WhatsApp API |
+| Validation | express-validator |
+| Frontend | React, Vite, Redux Toolkit |
+| Styling | Tailwind CSS |
 
-```bash
-git clone https://github.com/khandekarkhushhi/NightByte.git
+---
+
+## Project Structure
+
+```
+NightByte/
+├── frontend/
+│   ├── public/
+│   └── src/
+│       ├── api/
+│       │   ├── api.js
+│       │   └── api.jsx
+│       ├── assets/
+│       │   ├── hero.png
+│       │   ├── react.svg
+│       │   └── vite.svg
+│       ├── components/
+│       │   ├── AdminLayout.jsx
+│       │   ├── AdminRoute.jsx
+│       │   ├── CustomerLayout.jsx
+│       │   ├── Navbar.jsx
+│       │   ├── ProtectedRoute.jsx
+│       │   └── SkeletonCard.jsx
+│       ├── pages/
+│       │   ├── AdminDashboard.jsx
+│       │   ├── AdminMenu.jsx
+│       │   ├── AdminOrders.jsx
+│       │   ├── CafeSettings.jsx
+│       │   ├── Cart.jsx
+│       │   ├── Home.jsx
+│       │   ├── Login.jsx
+│       │   ├── Menu.jsx
+│       │   ├── Orders.jsx
+│       │   └── Signup.jsx
+│       ├── redux/
+│       │   ├── authSlice.js
+│       │   ├── cartSlice.js
+│       │   ├── menuSlice.js
+│       │   ├── orderSlice.js
+│       │   └── store.js
+│       ├── App.jsx
+│       ├── App.css
+│       ├── main.jsx
+│       ├── socket.js
+│       └── index.css
+├── Backend/
+│   ├── config/
+│   │   ├── db.js
+│   │   ├── env.js
+│   │   └── socket.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── cafeController.js
+│   │   ├── menuController.js
+│   │   ├── cartController.js
+│   │   ├── orderController.js
+│   │   └── whatsappController.js
+│   ├── middleware/
+│   │   ├── authMiddleware.js
+│   │   └── validateRequest.js
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── OTP.js
+│   │   ├── Cafe.js
+│   │   ├── MenuItem.js
+│   │   ├── Cart.js
+│   │   ├── Order.js
+│   │   └── WhatsappSession.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── cafeRoutes.js
+│   │   ├── menuRoutes.js
+│   │   ├── cartRoutes.js
+│   │   ├── orderRoutes.js
+│   │   └── whatsappRoutes.js
+│   ├── utils/
+│   │   ├── jwtUtils.js
+│   │   ├── otpUtils.js
+│   │   ├── whatsappService.js
+│   │   ├── whatsappMessages.js
+│   │   └── orderParser.js
+│   ├── .env.example
+│   ├── app.js
+│   └── server.js
+└── README.md
 ```
 
-Move into the project
+---
+
+## Getting Started
+
+### Prerequisites
+- Node.js v18+
+- MongoDB Atlas account
+- Twilio account with WhatsApp sandbox enabled
+
+### Backend Setup
 
 ```bash
-cd NightByte
-```
-
-Move into the frontend
-```bash
-cd NightByte/frontend
-```
-
-Install dependencies
-
-```bash
+cd nightbyte-backend
 npm install
+cp .env.example .env
+# Fill in your values in .env
+npm run dev
 ```
 
-Start the development server
+### Frontend Setup
 
 ```bash
+cd frontend
+npm install
 npm run dev
 ```
 
 ---
 
-## 🌐 Backend
+## API Endpoints
 
-This frontend communicates with a REST API backend developed separately.
+### Auth
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | `/api/auth/send-otp` | Public |
+| POST | `/api/auth/verify-otp` | Public |
+| POST | `/api/auth/register` | Public |
+| POST | `/api/auth/login` | Public |
+| GET | `/api/auth/me` | Protected |
 
-The application consumes APIs for:
+### Cafe
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | `/api/cafe` | Public |
+| POST | `/api/cafe` | Admin |
+| PUT | `/api/cafe` | Admin |
+| PATCH | `/api/cafe/toggle` | Admin |
 
-- Authentication
-- Menu Management
-- Cart
-- Orders
-- Cafe Settings
+### Menu
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | `/api/menu` | Public |
+| GET | `/api/menu/all` | Admin |
+| POST | `/api/menu` | Admin |
+| PUT | `/api/menu/:id` | Admin |
+| PATCH | `/api/menu/:id/toggle` | Admin |
+| DELETE | `/api/menu/:id` | Admin |
 
----
+### Cart
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | `/api/cart` | Customer |
+| POST | `/api/cart/add` | Customer |
+| POST | `/api/cart/remove` | Customer |
+| DELETE | `/api/cart` | Customer |
 
-## 📌 Major Functionalities
+### Orders
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | `/api/orders/place` | Customer |
+| GET | `/api/orders/my-orders` | Customer |
+| GET | `/api/orders` | Admin |
+| PATCH | `/api/orders/:id/status` | Admin |
 
-### Authentication
-
-- OTP Login
-- JWT Authentication
-- Customer & Admin Roles
-
-### Customer
-
-- Browse Menu
-- Cart Management
-- Place Order
-- Order Tracking
-
-### Admin
-
-- Dashboard
-- Menu Management
-- Order Management
-- Cafe Settings
-
----
-
-## 🔐 Role-Based Access
-
-### Customer
-
-- View Menu
-- Manage Cart
-- Place Orders
-- View Own Orders
-
-### Admin
-
-- Dashboard
-- View All Orders
-- Update Order Status
-- Manage Menu
-- Manage Cafe Information
+### WhatsApp
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | `/api/whatsapp/webhook` | Twilio |
 
 ---
 
-## 💻 Future Improvements
+## WhatsApp Ordering Flow
 
-- Revenue Analytics Dashboard
-- Charts & Reports
-- Search & Filters
-- Order Notifications
-- Image Upload for Menu Items
-- Payment Gateway Integration
-- Dark/Light Theme
-- Mobile Optimization
-
----
-
-## 👩‍💻 Author
-
-**Khushi Khandekar**
-
-GitHub:
-https://github.com/khandekarkhushhi
+```
+Customer texts "Menu"     → receives full menu
+Customer texts "Order"    → receives item list + format instructions
+Customer texts items      → receives order summary with total
+Customer texts "Confirm"  → order placed, owner notified instantly
+Customer texts "Cancel"   → order cancelled
+Customer texts "Update"   → receives current order status
+```
 
 ---
 
+## Socket Events
 
-## ⭐ Support
+| Event | Direction | Trigger |
+|---|---|---|
+| `new_order` | Server → Owner | Customer places an order |
+| `order_status_updated` | Server → Customer | Owner advances order status |
 
-If you found this project helpful, consider giving it a ⭐ on GitHub.
+---
+
+## Deployment
+
+- **Backend** — [Render](https://render.com)
+- **Frontend** — [Vercel](https://vercel.com)
+
+---
+
+## Authors
+
+**Khushi Khandekar** — Frontend
+[@khandekarkhushhi](https://github.com/khandekarkhushhi)
+
+**Bhoomi Dewangan** — Backend & Integration
+[@bhoomidewangan](https://github.com/bhoomidewangan)
+
