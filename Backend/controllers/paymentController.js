@@ -20,7 +20,7 @@ import Order from "../models/Order.js";
 import Cafe from "../models/Cafe.js";
 import User from "../models/User.js";
 import PendingPayment from "../models/PendingPayment.js";
-import { createCashfreeOrder, verifyCashfreePayment } from "../utils/cashfreeService.js";
+import { createCashfreeOrder, verifyCashfreePayment } from "../utils/cashfreeservice.js";
 import { getIO } from "../config/socket.js";
 import { sendWhatsAppMessage } from "../utils/whatsappService.js";
 import { orderConfirmedMessage, statusUpdateMessage } from "../utils/whatsappMessages.js";
