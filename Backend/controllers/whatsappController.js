@@ -270,7 +270,7 @@ import User from "../models/User.js";
 import WhatsappSession from "../models/WhatsappSession.js";
 import PendingPayment from "../models/PendingPayment.js";
 import { sendWhatsAppMessage } from "../utils/whatsappService.js";
-import { createCashfreePaymentLink } from "../utils/cashfreeService.js";
+import { createCashfreePaymentLink } from "../utils/cashfreeservice.js";
 import { parseOrder, calculateTotal } from "../utils/orderParser.js";
 import {
   menuMessage,
