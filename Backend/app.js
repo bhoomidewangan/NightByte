@@ -29,6 +29,8 @@ import menuRoutes from "./routes/menuRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import whatsappRoutes from "./routes/whatsappRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/cafe", cafeRoutes);
@@ -36,6 +38,7 @@ app.use("/api/menu", menuRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/whatsapp", whatsappRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 

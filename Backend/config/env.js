@@ -13,6 +13,10 @@ const required = [
   "TWILIO_AUTH_TOKEN",
   "TWILIO_WHATSAPP_FROM",
   "OWNER_PHONE",
+  "CASHFREE_APP_ID",
+  "CASHFREE_SECRET_KEY",
+  "FRONTEND_URL",
+  "BACKEND_URL",
 ];
 
 const missing = required.filter((key) => !process.env[key]);
@@ -50,6 +54,15 @@ const env = {
   port: parseInt(process.env.PORT || "5000", 10),
   nodeEnv: process.env.NODE_ENV || "development",
   isDev: process.env.NODE_ENV !== "production",
+
+  cashfree: {
+    appId: process.env.CASHFREE_APP_ID,
+    secretKey: process.env.CASHFREE_SECRET_KEY,
+    env: process.env.CASHFREE_ENV || "sandbox", // "sandbox" for test, "production" for live
+  },
+
+  frontendUrl: process.env.FRONTEND_URL,
+  backendUrl: process.env.BACKEND_URL,
 };
 
 export default env;

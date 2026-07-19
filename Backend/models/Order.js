@@ -73,6 +73,19 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
     },
 
+    // Payment fields
+    // "paid" for web orders (Cashfree), "whatsapp" for WhatsApp orders
+    paymentStatus: {
+      type: String,
+      enum: ["paid", "whatsapp", "pending"],
+      default: "pending",
+    },
+ 
+    // Cashfree order ID for web orders
+    paymentId: {
+      type: String,
+    },
+
     // Stored separately for fast single-field queries
     // Mongoose timestamps gives us createdAt but placedAt makes intent explicit
     placedAt: {
