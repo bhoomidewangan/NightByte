@@ -163,4 +163,4 @@ export const orderingDisabledMessage = () =>
 // ─── Unknown command ─────────────────────────────────────────────────────────
 
 export const unknownCommandMessage = () =>
-  `👋 Hi! Here's what you can do:\n\n*Menu* — View our menu\n*Order* — Place an order\n*Update* — Check your order status`;
+  `👋 Hi! Here's what you can do:\n\n*Menu* — View our menu\n*Order* — Place an order\n*Update* — Check your order status\n*Paid* — Confirm your payment after paying via link`;

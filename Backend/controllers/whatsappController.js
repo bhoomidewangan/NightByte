@@ -270,18 +270,22 @@ import User from "../models/User.js";
 import WhatsappSession from "../models/WhatsappSession.js";
 import PendingPayment from "../models/PendingPayment.js";
 import { sendWhatsAppMessage } from "../utils/whatsappService.js";
-import { createCashfreePaymentLink } from "../utils/cashfreeservice.js";
+import { createCashfreePaymentLink, verifyCashfreeLink } from "../utils/cashfreeservice.js";
 import { parseOrder, calculateTotal } from "../utils/orderParser.js";
 import {
   menuMessage,
   orderInstructionsMessage,
   orderSummaryMessage,
+  orderConfirmedMessage,
   orderCancelledMessage,
   parseErrorMessage,
   orderingDisabledMessage,
   unknownCommandMessage,
   currentStatusMessage,
 } from "../utils/whatsappMessages.js";
+import { getIO } from "../config/socket.js";
+
+
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -411,14 +415,74 @@ export const webhook = async (req, res) => {
 
       // Send payment link to customer
       await sendWhatsAppMessage(
-        phone,
-        `💳 *Complete Your Payment*\n\n` +
-          `Order Total: ₹${session.pendingTotal}\n\n` +
-          `Click the link below to pay securely:\n${paymentLink}\n\n` +
-          `Your order will be placed automatically once payment is confirmed. ✅`
-      );
+  phone,
+  `💳 *Complete Your Payment*\n\n` +
+    `Order Total: ₹${session.pendingTotal}\n\n` +
+    `Click the link below to pay securely:\n${paymentLink}\n\n` +
+    `After completing payment, text *Paid* here to confirm your order. ✅`
+);
       return;
     }
+
+    // ── PAID (customer texts after completing WhatsApp payment) ───────────────
+if (command === "paid" || command === "done") {
+  // Find most recent pending payment for this phone
+  const pending = await PendingPayment.findOne({
+    customerPhone: phone,
+    source: "whatsapp",
+  }).sort({ createdAt: -1 });
+
+  if (!pending) {
+    await sendWhatsAppMessage(
+      phone,
+      `No pending payment found.\n\nType *Order* to place a new order.`
+    );
+    return;
+  }
+
+  // Verify payment with Cashfree
+  const { verifyCashfreeLink } = await import("../utils/cashfreeService.js");
+  const { isPaid } = await verifyCashfreeLink(pending.tempOrderId);
+
+  if (!isPaid) {
+    await sendWhatsAppMessage(
+      phone,
+      `⚠️ Payment not confirmed yet.\n\nPlease complete the payment first, then text *Paid* again.`
+    );
+    return;
+  }
+
+  // Find or create user
+  let user = await User.findOne({ phone });
+  if (!user) {
+    user = await User.create({ phone, isMobileVerified: false });
+  }
+
+  // Create order
+  const order = await Order.create({
+    customer: user._id,
+    customerPhone: phone,
+    items: pending.items,
+    totalCost: pending.amount,
+    note: pending.note || "",
+    paymentId: pending.tempOrderId,
+    paymentStatus: "paid",
+  });
+
+  // Clean up
+  await PendingPayment.deleteOne({ tempOrderId: pending.tempOrderId });
+
+  // Notify owner via socket
+  try {
+    const io = getIO();
+    io.to("owner_room").emit("new_order", order);
+  } catch (socketErr) {
+    console.error("[Socket] Failed to emit new_order:", socketErr.message);
+  }
+
+  await sendWhatsAppMessage(phone, orderConfirmedMessage(pending.amount));
+  return;
+}
 
     // ── CANCEL ────────────────────────────────────────────────────────────────
     if (command === "cancel") {
