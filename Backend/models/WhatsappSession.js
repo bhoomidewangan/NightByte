@@ -64,7 +64,6 @@ const whatsappSessionSchema = new mongoose.Schema(
 
 // TTL index — MongoDB removes the document when expiresAt is reached
 whatsappSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-whatsappSessionSchema.index({ phone: 1 });
 
 const WhatsappSession = mongoose.model("WhatsappSession", whatsappSessionSchema);
 

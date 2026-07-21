@@ -36,9 +36,6 @@ const otpSchema = new mongoose.Schema({
 // Documents are removed when the current time passes expiresAt.
 otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Also index phone so lookups during verification are fast.
-otpSchema.index({ phone: 1 });
-
 const OTP = mongoose.model("OTP", otpSchema);
 
 export default OTP;

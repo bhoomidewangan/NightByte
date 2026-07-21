@@ -59,7 +59,6 @@ const pendingPaymentSchema = new mongoose.Schema(
 
 // TTL index
 pendingPaymentSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-pendingPaymentSchema.index({ tempOrderId: 1 });
 
 const PendingPayment = mongoose.model("PendingPayment", pendingPaymentSchema);
 
