@@ -441,7 +441,7 @@ if (command === "paid" || command === "done") {
   }
 
   // Verify payment with Cashfree
-  const { verifyCashfreeLink } = await import("../utils/cashfreeService.js");
+  const { verifyCashfreeLink } = await import("../utils/cashfreeservice.js");
   const { isPaid } = await verifyCashfreeLink(pending.tempOrderId);
 
   if (!isPaid) {
