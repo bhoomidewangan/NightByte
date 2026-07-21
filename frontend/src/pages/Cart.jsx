@@ -9,6 +9,7 @@ function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [subtotal, setSubtotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const fallbackImage =
     "https://images.unsplash.com/photo-1550547660-d9450f859349?w=600";
@@ -19,7 +20,6 @@ function Cart() {
   const fetchCart = async () => {
     try {
       const res = await api.get("/cart");
-
       setCartItems(res.data.cart.items || []);
       setSubtotal(res.data.cart.totalCost || 0);
     } catch (error) {
@@ -33,13 +33,20 @@ function Cart() {
     fetchCart();
   }, []);
 
+  // Load Cashfree SDK script dynamically
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   const increaseItem = async (item) => {
     try {
-      await api.post("/cart/add", {
-        menuItemId: item.menuItem,
-        quantity: 1,
-      });
-
+      await api.post("/cart/add", { menuItemId: item.menuItem, quantity: 1 });
       toast.success("Quantity updated");
       fetchCart();
     } catch (error) {
@@ -49,11 +56,7 @@ function Cart() {
 
   const decreaseItem = async (item) => {
     try {
-      await api.post("/cart/remove", {
-        menuItemId: item.menuItem,
-        quantity: 1,
-      });
-
+      await api.post("/cart/remove", { menuItemId: item.menuItem, quantity: 1 });
       toast.success("Quantity updated");
       fetchCart();
     } catch (error) {
@@ -67,7 +70,6 @@ function Cart() {
         menuItemId: item.menuItem,
         quantity: item.quantity,
       });
-
       toast.success("Item removed");
       fetchCart();
     } catch (error) {
@@ -78,7 +80,6 @@ function Cart() {
   const clearBackendCart = async () => {
     try {
       await api.delete("/cart");
-
       toast.success("Cart cleared");
       fetchCart();
     } catch (error) {
@@ -86,21 +87,38 @@ function Cart() {
     }
   };
 
-  const placeOrder = async () => {
+  // ── Payment flow ────────────────────────────────────────────────────────────
+  const handlePayment = async () => {
     try {
       if (cartItems.length === 0) {
         toast.error("Cart is empty");
         return;
       }
 
-      await api.post("/orders/place", {
+      setPaymentLoading(true);
+
+      // Step 1 — Initiate payment, get paymentSessionId from backend
+      const res = await api.post("/payment/initiate", {
         note: "Order placed from NightByte frontend",
       });
 
-      toast.success("Order placed successfully");
-      navigate("/orders");
+      const { paymentSessionId, tempOrderId } = res.data;
+
+      // Step 2 — Open Cashfree checkout using the SDK
+      const cashfree = window.Cashfree({ mode: "sandbox" }); // change to "production" when live
+
+      const checkoutOptions = {
+        paymentSessionId,
+        redirectTarget: "_self", // redirect in same tab
+      };
+
+      // This opens the Cashfree payment page
+      // After payment, Cashfree redirects to FRONTEND_URL/payment/status?order_id=xxx
+      await cashfree.checkout(checkoutOptions);
+
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to place order");
+      toast.error(error.response?.data?.message || "Failed to initiate payment");
+      setPaymentLoading(false);
     }
   };
 
@@ -130,7 +148,6 @@ function Cart() {
             <p className="text-gray-400 mt-3">
               Add something tasty from the menu.
             </p>
-
             <Link
               to="/menu"
               className="inline-block mt-6 bg-purple-300 text-purple-950 px-6 py-3 rounded-xl font-bold hover:bg-purple-200"
@@ -152,7 +169,6 @@ function Cart() {
                       alt={item.name}
                       className="w-24 h-24 rounded-xl object-cover"
                     />
-
                     <div>
                       <h2 className="text-xl font-bold">{item.name}</h2>
                       <p className="text-gray-400 text-sm mt-1">
@@ -221,10 +237,11 @@ function Cart() {
               </div>
 
               <button
-                onClick={placeOrder}
-                className="w-full mt-8 bg-purple-300 text-purple-950 py-4 rounded-xl font-bold hover:bg-purple-200 transition"
+                onClick={handlePayment}
+                disabled={paymentLoading}
+                className="w-full mt-8 bg-purple-300 text-purple-950 py-4 rounded-xl font-bold hover:bg-purple-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Place Order 🚀
+                {paymentLoading ? "Initiating Payment..." : "Pay & Place Order 🚀"}
               </button>
 
               <button

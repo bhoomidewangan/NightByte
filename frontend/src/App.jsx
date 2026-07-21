@@ -21,6 +21,8 @@ import CafeSettings from "./pages/CafeSettings";
 
 import { connectSocket, disconnectSocket } from "./socket";
 
+import PaymentStatus from "./pages/PaymentStatus";
+
 function App() {
   const { token, isLoggedIn } = useSelector((state) => state.auth);
 
@@ -159,6 +161,19 @@ function App() {
             </AdminRoute>
           }
         />
+
+        // Add this route inside
+        <Route
+          path="/payment/status"
+          element={
+            <ProtectedRoute>
+              <CustomerLayout>
+                <PaymentStatus />
+              </CustomerLayout>
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );
