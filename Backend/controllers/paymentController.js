@@ -75,6 +75,7 @@ export const initiate = async (req, res, next) => {
       customer: req.user._id,
       customerPhone: req.user.phone,
       amount: cart.totalCost,
+      source: "web",
       // Snapshot cart items at payment initiation time
       items: cart.items.map((i) => ({
         menuItem: i.menuItem,
