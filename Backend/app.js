@@ -9,7 +9,10 @@ const app = express();
 
 // ─── Core Middleware ─────────────────────────────────────────────────────────
 
-app.use(cors());
+app.use(cors({
+  origin: "https://your-vercel-app.vercel.app",
+  credentials: true,
+}));
 app.use(express.json());             // parse application/json bodies
 app.use(express.urlencoded({ extended: true })); // parse form bodies
 
