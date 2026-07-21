@@ -11,12 +11,15 @@ A full-stack canteen management and ordering system with dual ordering channels 
 - OTP-based login via WhatsApp
 - Browse menu grouped by category
 - Add items to cart with live total calculation
-- Place orders and track status in real time via Socket.io
+- Pay securely via Cashfree payment gateway
+- Track order status in real time via Socket.io
 
 ### Customer (WhatsApp)
 - Type `Menu` to browse available items
 - Type `Order` to place an order conversationally
-- Type `Confirm` or `Cancel` to confirm or cancel
+- Type `Confirm` to receive a Cashfree payment link
+- Type `Paid` after completing payment to confirm order
+- Type `Cancel` to cancel a pending order
 - Type `Update` to check current order status
 - Receive automatic status updates as the owner advances the order
 
@@ -38,6 +41,7 @@ A full-stack canteen management and ordering system with dual ordering channels 
 | Database | MongoDB, Mongoose |
 | Authentication | JWT, bcryptjs |
 | Real-time | Socket.io |
+| Payment | Cashfree Payment Gateway |
 | WhatsApp | Twilio WhatsApp API |
 | Validation | express-validator |
 | Frontend | React, Vite, Redux Toolkit |
@@ -76,6 +80,7 @@ NightByte/
 │       │   ├── Login.jsx
 │       │   ├── Menu.jsx
 │       │   ├── Orders.jsx
+│       │   ├── PaymentStatus.jsx
 │       │   └── Signup.jsx
 │       ├── redux/
 │       │   ├── authSlice.js
@@ -99,6 +104,7 @@ NightByte/
 │   │   ├── menuController.js
 │   │   ├── cartController.js
 │   │   ├── orderController.js
+│   │   ├── paymentController.js
 │   │   └── whatsappController.js
 │   ├── middleware/
 │   │   ├── authMiddleware.js
@@ -110,6 +116,7 @@ NightByte/
 │   │   ├── MenuItem.js
 │   │   ├── Cart.js
 │   │   ├── Order.js
+│   │   ├── PendingPayment.js
 │   │   └── WhatsappSession.js
 │   ├── routes/
 │   │   ├── authRoutes.js
@@ -117,8 +124,10 @@ NightByte/
 │   │   ├── menuRoutes.js
 │   │   ├── cartRoutes.js
 │   │   ├── orderRoutes.js
+│   │   ├── paymentRoutes.js
 │   │   └── whatsappRoutes.js
 │   ├── utils/
+│   │   ├── cashfreeService.js
 │   │   ├── jwtUtils.js
 │   │   ├── otpUtils.js
 │   │   ├── whatsappService.js
@@ -138,11 +147,12 @@ NightByte/
 - Node.js v18+
 - MongoDB Atlas account
 - Twilio account with WhatsApp sandbox enabled
+- Cashfree account (sandbox for testing)
 
 ### Backend Setup
 
 ```bash
-cd nightbyte-backend
+cd Backend
 npm install
 cp .env.example .env
 # Fill in your values in .env
@@ -155,6 +165,28 @@ npm run dev
 cd frontend
 npm install
 npm run dev
+```
+
+---
+
+## Environment Variables
+
+```env
+MONGO_URI=
+JWT_SECRET=
+JWT_EXPIRES_IN=7d
+OTP_EXPIRY_MINUTES=10
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+OWNER_PHONE=+91XXXXXXXXXX
+CASHFREE_APP_ID=
+CASHFREE_SECRET_KEY=
+CASHFREE_ENV=sandbox
+FRONTEND_URL=http://localhost:5173
+BACKEND_URL=http://localhost:5000
+PORT=5000
+NODE_ENV=development
 ```
 
 ---
@@ -199,10 +231,16 @@ npm run dev
 ### Orders
 | Method | Endpoint | Access |
 |---|---|---|
-| POST | `/api/orders/place` | Customer |
 | GET | `/api/orders/my-orders` | Customer |
 | GET | `/api/orders` | Admin |
 | PATCH | `/api/orders/:id/status` | Admin |
+
+### Payment
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | `/api/payment/initiate` | Customer |
+| POST | `/api/payment/verify` | Customer |
+| POST | `/api/payment/webhook` | Cashfree |
 
 ### WhatsApp
 | Method | Endpoint | Access |
@@ -211,13 +249,26 @@ npm run dev
 
 ---
 
+## Web Ordering Flow
+
+```
+Customer browses menu → adds items to cart
+→ clicks "Pay & Place Order"
+→ Cashfree checkout opens
+→ payment completed
+→ redirected to /payment/status
+→ order created, owner notified via Socket.io
+```
+
 ## WhatsApp Ordering Flow
 
 ```
 Customer texts "Menu"     → receives full menu
 Customer texts "Order"    → receives item list + format instructions
 Customer texts items      → receives order summary with total
-Customer texts "Confirm"  → order placed, owner notified instantly
+Customer texts "Confirm"  → receives Cashfree payment link
+Customer pays via link    → texts "Paid" to confirm
+Order created             → owner notified via Socket.io
 Customer texts "Cancel"   → order cancelled
 Customer texts "Update"   → receives current order status
 ```
