@@ -201,6 +201,7 @@ export const verify = async (req, res, next) => {
  */
 export const webhook = async (req, res) => {
   // Respond 200 immediately so Cashfree doesn't retry
+  console.log("[Payment Webhook] Hit — body:", JSON.stringify(req.body));
   res.status(200).send();
 
   try {
