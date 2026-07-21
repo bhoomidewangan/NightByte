@@ -209,7 +209,8 @@ export const webhook = async (req, res) => {
     // Cashfree sends different event types — we only care about payment success
     if (
       event.type !== "PAYMENT_SUCCESS_WEBHOOK" &&
-      event.type !== "PAYMENT_LINK_EVENT"
+      event.type !== "PAYMENT_LINK_EVENT" &&
+      event.type !== "PAYMENT_SUCCESS"
     ) {
       return;
     }

@@ -13,7 +13,7 @@ const BASE_URL =
 
 // Headers required by Cashfree on every request
 const headers = {
-  "x-api-version": "2023-08-01",
+  "x-api-version": "2025-01-01",
   "x-client-id": env.cashfree.appId,
   "x-client-secret": env.cashfree.secretKey,
   "Content-Type": "application/json",
