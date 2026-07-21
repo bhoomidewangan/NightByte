@@ -208,28 +208,44 @@ export const webhook = async (req, res) => {
     const event = req.body;
 
     // Cashfree sends different event types — we only care about payment success
-    if (
-      event.type !== "PAYMENT_SUCCESS_WEBHOOK" &&
-      event.type !== "PAYMENT_LINK_EVENT" &&
-      event.type !== "PAYMENT_SUCCESS"
-    ) {
-      return;
-    }
+    // if (
+    //   event.type !== "PAYMENT_SUCCESS_WEBHOOK" &&
+    //   event.type !== "PAYMENT_LINK_EVENT" &&
+    //   event.type !== "PAYMENT_SUCCESS"
+    // ) {
+    //   return;
+    // }
+    console.log("[Payment Webhook] Event type:", event.type);
 
+
+    
     // Extract order/link ID depending on event type
     const orderId =
       event.data?.order?.order_id ||
-      event.data?.payment_link?.link_id;
+      event.data?.payment_link?.link_id ||
+      event.data?.link?.link_id;
 
-    if (!orderId) return;
+    console.log("[Payment Webhook] Order ID:", orderId);
+
+    if (!orderId) {
+      console.log("[Payment Webhook] No orderId found, skipping");
+      return;
+    }
+
 
     // Find the pending payment record
     const pending = await PendingPayment.findOne({ tempOrderId: orderId });
-    if (!pending) return; // Already processed or expired
+    if (!pending) {
+      console.log("[Payment Webhook] No pending payment found for:", orderId);
+      return;
+    }// Already processed or expired
 
     // Only handle WhatsApp orders here
     // Web orders are handled by /verify — skip to avoid duplicate orders
-    if (pending.source === "web") return;
+    if (pending.source === "web") {
+      console.log("[Payment Webhook] Web order, skipping — handled by /verify");
+      return;
+    }
 
     // Find or create user for WhatsApp customer
     let user = await User.findOne({ phone: pending.customerPhone });
